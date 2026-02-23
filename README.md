@@ -1,1 +1,1 @@
-# lesson-repo hello world-1
+# lesson-repo
