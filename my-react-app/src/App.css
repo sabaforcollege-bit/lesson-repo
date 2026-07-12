@@ -1,0 +1,17 @@
+body {
+  background-color: rgb(18, 18, 18);
+}
+
+.logout {
+  border: 2px solid darkgreen;
+  background-color: transparent;
+  color: darkgreen;
+  cursor: pointer;
+  height: 50px;
+  width: 110px;
+  margin: 0 auto;
+}
+
+h1 {
+  color: darkgreen;
+}

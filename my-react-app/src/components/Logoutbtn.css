@@ -1,0 +1,8 @@
+.logoutbtn {
+    border: 2px solid darkred;
+    background-color: transparent;
+    color: darkred;
+    cursor: pointer;
+    height: 50px;
+    width: 110px;
+}
