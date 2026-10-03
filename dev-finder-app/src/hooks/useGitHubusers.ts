@@ -27,7 +27,7 @@ export function useGitHubUsers(searchTerm: string) {
             const data: GitHubUser[] = await response.json();
             setUsers(data);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'უცნობი შეცდომა');
+            setError(err instanceof Error ? err.message : 'შეცდომა');
         } finally {
             setLoading(false);
         }
@@ -43,7 +43,7 @@ export function useGitHubUsers(searchTerm: string) {
             const data = await response.json();
             setUsers(data.items || []);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'უცნობი შეცდომა');
+            setError(err instanceof Error ? err.message : 'შეცდომა');
         } finally {
             setLoading(false);
         }
