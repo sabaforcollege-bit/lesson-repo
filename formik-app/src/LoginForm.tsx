@@ -73,7 +73,7 @@ export function LoginForm() {
                             ? 'border-red-500 focus:ring-2 focus:ring-red-200'
                             : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200'
                             }`}
-                        placeholder="johndoe"
+                        placeholder="ჯონ"
                     />
                     {formik.touched.username && formik.errors.username && (
                         <p className="mt-1 text-sm text-red-500">{formik.errors.username}</p>
