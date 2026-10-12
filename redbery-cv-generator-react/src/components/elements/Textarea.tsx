@@ -1,33 +1,32 @@
-import type { FieldProps } from 'formik';
+import { type FieldInputProps, type FieldMetaProps } from 'formik';
+import React from 'react';
 
-interface TextareaProps extends FieldProps {
+interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
     label: string;
     hint?: string;
-    placeholder?: string;
-    rows?: number;
+    field?: FieldInputProps<any>;
+    meta?: FieldMetaProps<any>;
 }
 
-export function Textarea({ field, form, label, hint, placeholder, rows = 4 }: TextareaProps) {
-    const isError = Boolean(form.touched[field.name] && form.errors[field.name]);
+export function Textarea({ label, hint, field, meta, ...props }: TextareaProps) {
+    const hasError = meta?.touched && meta?.error;
 
     return (
-        <div className="flex flex-col gap-1 w-full">
+        <div className="flex flex-col gap-1.5 w-full">
             <label className="text-sm font-bold text-gray-800">{label}</label>
-            <div className="relative">
-                <textarea
-                    {...field}
-                    rows={rows}
-                    placeholder={placeholder}
-                    className={`w-full p-3 border rounded-md outline-none resize-y transition-colors ${isError ? 'border-red-500' : 'border-gray-300 focus:border-purple-500'
-                        }`}
-                />
-                {isError && (
-                    <span className="absolute right-3 top-3 text-red-500 font-bold">
-                        !
-                    </span>
-                )}
-            </div>
-            {hint && <span className="text-xs text-gray-500">{hint}</span>}
+            <textarea
+                {...field}
+                {...props}
+                className={`w-full p-3 border rounded-md text-gray-700 focus:outline-none transition-colors min-h-[100px] ${hasError
+                        ? 'border-red-500 focus:border-red-500' // 👈 მარტო ნაცრისფერი ჩარჩო გაწითლდება
+                        : 'border-gray-300 focus:border-blue-500'
+                    } ${props.className || ''}`}
+            />
+            {hasError ? (
+                <span className="text-xs text-red-500">{meta.error}</span>
+            ) : (
+                hint && <span className="text-xs text-gray-400">{hint}</span>
+            )}
         </div>
     );
 }

@@ -1,33 +1,32 @@
-import type { FieldProps } from 'formik';
+import { type FieldInputProps, type FieldMetaProps } from 'formik';
+import React from 'react';
 
-interface InputProps extends FieldProps {
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label: string;
     hint?: string;
-    placeholder?: string;
-    type?: string;
+    field?: FieldInputProps<any>;
+    meta?: FieldMetaProps<any>;
 }
 
-export function Input({ field, form, label, hint, placeholder, type = 'text' }: InputProps) {
-    const isError = Boolean(form.touched[field.name] && form.errors[field.name]);
+export function Input({ label, hint, field, meta, ...props }: InputProps) {
+    const hasError = meta?.touched && meta?.error;
 
     return (
-        <div className="flex flex-col gap-1 w-full">
+        <div className="flex flex-col gap-1.5 w-full">
             <label className="text-sm font-bold text-gray-800">{label}</label>
-            <div className="relative">
-                <input
-                    {...field}
-                    type={type}
-                    placeholder={placeholder}
-                    className={`w-full p-3 border rounded-md outline-none transition-colors ${isError ? 'border-red-500' : 'border-gray-300 focus:border-purple-500'
-                        }`}
-                />
-                {isError && (
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 font-bold">
-                        !
-                    </span>
-                )}
-            </div>
-            {hint && <span className="text-xs text-gray-500">{hint}</span>}
+            <input
+                {...field}
+                {...props}
+                className={`w-full p-3 border rounded-md text-gray-700 focus:outline-none transition-colors ${hasError
+                        ? 'border-red-500 focus:border-red-500' // 👈 მარტო ნაცრისფერი ჩარჩო გაწითლდება
+                        : 'border-gray-300 focus:border-blue-500'
+                    } ${props.className || ''}`}
+            />
+            {hasError ? (
+                <span className="text-xs text-red-500">{meta.error}</span>
+            ) : (
+                hint && <span className="text-xs text-gray-400">{hint}</span>
+            )}
         </div>
     );
 }

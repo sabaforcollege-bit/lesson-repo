@@ -70,10 +70,12 @@ export function Education() {
                         onSubmit={handleSubmit}
                         enableReinitialize
                     >
-                        {({ values, errors }) => {
-                            if (Object.keys(errors).length > 0) {
-                                console.log('Education Validation Errors:', errors);
-                            }
+                        {({ values, errors, touched, setTouched }) => {
+                            const getFieldError = (index: number, fieldName: string) => {
+                                const eduErrors = errors.educations as any;
+                                const eduTouched = touched.educations as any;
+                                return eduTouched?.[index]?.[fieldName] && eduErrors?.[index]?.[fieldName];
+                            };
 
                             return (
                                 <Form className="flex flex-col gap-6">
@@ -82,67 +84,101 @@ export function Education() {
                                     <FieldArray name="educations">
                                         {({ push, remove }) => (
                                             <>
-                                                {values.educations.map((_, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="flex flex-col gap-4 border-b border-gray-200 pb-6 mb-4 relative"
-                                                    >
-                                                        {index > 0 && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => remove(index)}
-                                                                className="self-end text-red-500 text-sm hover:underline font-medium"
-                                                            >
-                                                                წაშლა
-                                                            </button>
-                                                        )}
+                                                {values.educations.map((_, index) => {
+                                                    const instError = getFieldError(index, 'institute');
+                                                    const degError = getFieldError(index, 'degree');
 
-                                                        <Field
-                                                            name={`educations.${index}.institute`}
-                                                            component={Input}
-                                                            label="სასწავლებელი"
-                                                            placeholder="სასწავლებელი"
-                                                            hint="მინიმუმ 2 სიმბოლო"
-                                                        />
-
-                                                        <div className="flex gap-4">
-                                                            {/* Dropdown ხარისხის არჩევისთვის */}
-                                                            <div className="flex flex-col gap-2 w-1/2">
-                                                                <label className="text-sm font-bold text-gray-800">
-                                                                    ხარისხი
-                                                                </label>
-                                                                <Field
-                                                                    as="select"
-                                                                    name={`educations.${index}.degree`}
-                                                                    className="w-full p-3 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:border-blue-500"
+                                                    return (
+                                                        <div
+                                                            key={index}
+                                                            className="flex flex-col gap-4 border-b border-gray-200 pb-6 mb-4 relative"
+                                                        >
+                                                            {index > 0 && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => remove(index)}
+                                                                    className="self-end text-red-500 text-sm hover:underline font-medium"
                                                                 >
-                                                                    <option value="">აირჩიეთ ხარისხი</option>
-                                                                    {degreesList.map((deg) => (
-                                                                        <option key={deg} value={deg}>
-                                                                            {deg}
-                                                                        </option>
-                                                                    ))}
+                                                                    წაშლა
+                                                                </button>
+                                                            )}
+
+                                                            {/* სასწავლებელი */}
+                                                            <div className="relative">
+                                                                <Field name={`educations.${index}.institute`}>
+                                                                    {({ field, meta }: { field: any; meta: any }) => (
+                                                                        <Input
+                                                                            field={field}
+                                                                            meta={meta}
+                                                                            label="სასწავლებელი"
+                                                                            placeholder="სასწავლებელი"
+                                                                            hint="მინიმუმ 2 სიმბოლო"
+                                                                        />
+                                                                    )}
+                                                                </Field>
+                                                                {instError && (
+                                                                    <span className="absolute right-3 top-10 text-red-500 font-bold">!</span>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="flex gap-4">
+                                                                {/* ხარისხი */}
+                                                                <div className="flex flex-col gap-2 w-1/2">
+                                                                    <label className="text-sm font-bold text-gray-800">
+                                                                        ხარისხი
+                                                                    </label>
+                                                                    <Field
+                                                                        as="select"
+                                                                        name={`educations.${index}.degree`}
+                                                                        className={`w-full p-3 border rounded-md bg-white text-gray-700 focus:outline-none transition-colors ${degError ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                                                                            }`}
+                                                                    >
+                                                                        <option value="">აირჩიეთ ხარისხი</option>
+                                                                        {degreesList.map((deg) => (
+                                                                            <option key={deg} value={deg}>
+                                                                                {deg}
+                                                                            </option>
+                                                                        ))}
+                                                                    </Field>
+
+                                                                    {degError && (
+                                                                        <span className="text-xs text-red-500">
+                                                                            {(errors.educations as any)?.[index]?.degree || 'სავალდებულოა'}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* თარიღი */}
+                                                                <div className="w-1/2">
+                                                                    <Field name={`educations.${index}.dueDate`}>
+                                                                        {({ field, meta }: { field: any; meta: any }) => (
+                                                                            <Input
+                                                                                field={field}
+                                                                                meta={meta}
+                                                                                type="date"
+                                                                                label="დამთავრების თარიღი"
+                                                                            />
+                                                                        )}
+                                                                    </Field>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* აღწერა */}
+                                                            <div>
+                                                                <Field name={`educations.${index}.description`}>
+                                                                    {({ field, meta }: { field: any; meta: any }) => (
+                                                                        <Textarea
+                                                                            field={field}
+                                                                            meta={meta}
+                                                                            label="აღწერა"
+                                                                            placeholder="განათლების აღწერა"
+                                                                        />
+                                                                    )}
                                                                 </Field>
                                                             </div>
-
-                                                            <div className="w-1/2">
-                                                                <Field
-                                                                    name={`educations.${index}.dueDate`}
-                                                                    component={Input}
-                                                                    type="date"
-                                                                    label="დამთავრების თარიღი"
-                                                                />
-                                                            </div>
                                                         </div>
-
-                                                        <Field
-                                                            name={`educations.${index}.description`}
-                                                            component={Textarea}
-                                                            label="აღწერა"
-                                                            placeholder="განათლების აღწერა"
-                                                        />
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
 
                                                 <Button
                                                     type="button"
@@ -171,7 +207,19 @@ export function Education() {
                                         >
                                             უკან
                                         </Button>
-                                        <Button type="submit" variant="primary">
+                                        <Button
+                                            type="submit"
+                                            variant="primary"
+                                            onClick={() => {
+                                                const touchedEducations = values.educations.map(() => ({
+                                                    institute: true,
+                                                    degree: true,
+                                                    dueDate: true,
+                                                    description: true,
+                                                }));
+                                                setTouched({ ...touched, educations: touchedEducations });
+                                            }}
+                                        >
                                             დასრულება
                                         </Button>
                                     </div>

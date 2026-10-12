@@ -7,7 +7,7 @@ import { Textarea } from '../components/elements/Textarea';
 import { Button } from '../components/elements/Button';
 import { ResumePreview } from '../components/resume/ResumePreview';
 import { experienceSchema } from '../schemas/resumeValidation';
-import type { ExperienceValues } from '../types/resume';
+import { type ExperienceValues } from '../types/resume';
 import { getStoredResumeData, saveStoredResumeData } from '../utils/storage';
 import * as Yup from 'yup';
 
@@ -15,7 +15,6 @@ const validationSchema = Yup.object().shape({
     experiences: Yup.array().of(experienceSchema),
 });
 
-// მონაცემების LocalStorage-ში ავტომატურად შენახვა Real-time-ში
 function AutoSaveObserver() {
     const { values } = useFormikContext<{ experiences: ExperienceValues[] }>();
 
@@ -30,7 +29,6 @@ export function Experience() {
     const navigate = useNavigate();
     const savedData = getStoredResumeData();
 
-    // საწყისი მნიშვნელობები LocalStorage-დან
     const initialValues = {
         experiences:
             savedData.experiences && savedData.experiences.length > 0
@@ -53,7 +51,6 @@ export function Experience() {
 
     return (
         <div className="flex min-h-screen bg-gray-50">
-            {/* მარცხენა მხარე - ფორმა */}
             <div className="w-1/2 p-12 bg-white min-h-screen flex flex-col justify-between">
                 <div>
                     <HeaderNavigation title="გამოცდილება" step="2/3" />
@@ -64,10 +61,12 @@ export function Experience() {
                         onSubmit={handleSubmit}
                         enableReinitialize
                     >
-                        {({ values, errors }) => {
-                            if (Object.keys(errors).length > 0) {
-                                console.log('Experience Validation Errors:', errors);
-                            }
+                        {({ values, errors, touched, setTouched }) => {
+                            const getFieldError = (index: number, fieldName: string) => {
+                                const expErrors = errors.experiences as any;
+                                const expTouched = touched.experiences as any;
+                                return expTouched?.[index]?.[fieldName] && expErrors?.[index]?.[fieldName];
+                            };
 
                             return (
                                 <Form className="flex flex-col gap-6">
@@ -76,59 +75,109 @@ export function Experience() {
                                     <FieldArray name="experiences">
                                         {({ push, remove }) => (
                                             <>
-                                                {values.experiences.map((_, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="flex flex-col gap-4 border-b border-gray-200 pb-6 mb-4 relative"
-                                                    >
-                                                        {index > 0 && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => remove(index)}
-                                                                className="self-end text-red-500 text-sm hover:underline font-medium"
-                                                            >
-                                                                წაშლა
-                                                            </button>
-                                                        )}
+                                                {values.experiences.map((_, index) => {
+                                                    const posError = getFieldError(index, 'position');
+                                                    const empError = getFieldError(index, 'employer');
+                                                    const descError = getFieldError(index, 'description');
 
-                                                        <Field
-                                                            name={`experiences.${index}.position`}
-                                                            component={Input}
-                                                            label="თანამდებობა"
-                                                            placeholder="დეველოპერი, დიზაინერი ა.შ."
-                                                            hint="მინიმუმ 2 სიმბოლო"
-                                                        />
-                                                        <Field
-                                                            name={`experiences.${index}.employer`}
-                                                            component={Input}
-                                                            label="დამსაქმებელი"
-                                                            placeholder="დამსაქმებელი"
-                                                            hint="მინიმუმ 2 სიმბოლო"
-                                                        />
+                                                    return (
+                                                        <div
+                                                            key={index}
+                                                            className="flex flex-col gap-4 border-b border-gray-200 pb-6 mb-4 relative"
+                                                        >
+                                                            {index > 0 && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => remove(index)}
+                                                                    className="self-end text-red-500 text-sm hover:underline font-medium"
+                                                                >
+                                                                    წაშლა
+                                                                </button>
+                                                            )}
 
-                                                        <div className="flex gap-4">
-                                                            <Field
-                                                                name={`experiences.${index}.startDate`}
-                                                                component={Input}
-                                                                type="date"
-                                                                label="დაწყების თარიღი"
-                                                            />
-                                                            <Field
-                                                                name={`experiences.${index}.dueDate`}
-                                                                component={Input}
-                                                                type="date"
-                                                                label="დამთავრების თარიღი"
-                                                            />
+                                                            {/* თანამდებობა */}
+                                                            <div className="relative">
+                                                                <Field name={`experiences.${index}.position`}>
+                                                                    {({ field, meta }: { field: any; meta: any }) => (
+                                                                        <Input
+                                                                            field={field}
+                                                                            meta={meta}
+                                                                            label="თანამდებობა"
+                                                                            placeholder="დეველოპერი, დიზაინერი ა.შ."
+                                                                            hint="მინიმუმ 2 სიმბოლო"
+                                                                        />
+                                                                    )}
+                                                                </Field>
+                                                                {posError && (
+                                                                    <span className="absolute right-3 top-10 text-red-500 font-bold">!</span>
+                                                                )}
+                                                            </div>
+
+                                                            {/* დამსაქმებელი */}
+                                                            <div className="relative">
+                                                                <Field name={`experiences.${index}.employer`}>
+                                                                    {({ field, meta }: { field: any; meta: any }) => (
+                                                                        <Input
+                                                                            field={field}
+                                                                            meta={meta}
+                                                                            label="დამსაქმებელი"
+                                                                            placeholder="დამსაქმებელი"
+                                                                            hint="მინიმუმ 2 სიმბოლო"
+                                                                        />
+                                                                    )}
+                                                                </Field>
+                                                                {empError && (
+                                                                    <span className="absolute right-3 top-10 text-red-500 font-bold">!</span>
+                                                                )}
+                                                            </div>
+
+                                                            {/* თარიღები */}
+                                                            <div className="flex gap-4">
+                                                                <div className="w-1/2">
+                                                                    <Field name={`experiences.${index}.startDate`}>
+                                                                        {({ field, meta }: { field: any; meta: any }) => (
+                                                                            <Input
+                                                                                field={field}
+                                                                                meta={meta}
+                                                                                type="date"
+                                                                                label="დაწყების თარიღი"
+                                                                            />
+                                                                        )}
+                                                                    </Field>
+                                                                </div>
+                                                                <div className="w-1/2">
+                                                                    <Field name={`experiences.${index}.dueDate`}>
+                                                                        {({ field, meta }: { field: any; meta: any }) => (
+                                                                            <Input
+                                                                                field={field}
+                                                                                meta={meta}
+                                                                                type="date"
+                                                                                label="დამთავრების თარიღი"
+                                                                            />
+                                                                        )}
+                                                                    </Field>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* აღწერა */}
+                                                            <div className="relative">
+                                                                <Field name={`experiences.${index}.description`}>
+                                                                    {({ field, meta }: { field: any; meta: any }) => (
+                                                                        <Textarea
+                                                                            field={field}
+                                                                            meta={meta}
+                                                                            label="აღწერა"
+                                                                            placeholder="როლი თანამდებობაზე და ზოგადი აღწერა"
+                                                                        />
+                                                                    )}
+                                                                </Field>
+                                                                {descError && (
+                                                                    <span className="absolute right-3 top-10 text-red-500 font-bold">!</span>
+                                                                )}
+                                                            </div>
                                                         </div>
-
-                                                        <Field
-                                                            name={`experiences.${index}.description`}
-                                                            component={Textarea}
-                                                            label="აღწერა"
-                                                            placeholder="როლი თანამდებობაზე და ზოგადი აღწერა"
-                                                        />
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
 
                                                 <Button
                                                     type="button"
@@ -158,7 +207,21 @@ export function Experience() {
                                         >
                                             უკან
                                         </Button>
-                                        <Button type="submit" variant="primary">
+
+                                        <Button
+                                            type="submit"
+                                            variant="primary"
+                                            onClick={() => {
+                                                const touchedExperiences = values.experiences.map(() => ({
+                                                    position: true,
+                                                    employer: true,
+                                                    startDate: true,
+                                                    dueDate: true,
+                                                    description: true,
+                                                }));
+                                                setTouched({ ...touched, experiences: touchedExperiences });
+                                            }}
+                                        >
                                             შემდეგი
                                         </Button>
                                     </div>
@@ -169,7 +232,6 @@ export function Experience() {
                 </div>
             </div>
 
-            {/* მარჯვენა მხარე - Live Preview */}
             <div className="w-1/2 p-12 bg-white border-l">
                 <ResumePreview />
             </div>

@@ -19,7 +19,7 @@ export interface EducationValues {
     institute: string;
     degree: string;
     dueDate: string;
-    description: string;
+    description?: string;
 }
 
 export interface ResumeFormData {
