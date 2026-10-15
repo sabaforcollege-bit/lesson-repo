@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { Formik, Form, Field, useFormikContext } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { useNavigate } from 'react-router-dom';
 import { HeaderNavigation } from '../components/resume/HeaderNavigation';
 import { Input } from '../components/elements/Input';
@@ -8,33 +7,30 @@ import { Button } from '../components/elements/Button';
 import { ResumePreview } from '../components/resume/ResumePreview';
 import { personalInfoSchema } from '../schemas/resumeValidation';
 import { type PersonalInfoValues } from '../types/resume';
-import { getStoredResumeData, saveStoredResumeData } from '../utils/storage';
-
-function AutoSaveObserver() {
-    const { values } = useFormikContext<PersonalInfoValues>();
-
-    useEffect(() => {
-        saveStoredResumeData({ personalInfo: values });
-    }, [values]);
-
-    return null;
-}
+import { useAppDispatch, useAppSelector } from '../store/hook';
+import { updatePersonalInfo } from '../store/resumeSlice';
 
 export function PersonalInfo() {
     const navigate = useNavigate();
-    const savedData = getStoredResumeData() as any;
+    const dispatch = useAppDispatch();
+    const savedPersonalInfo = useAppSelector((state) => state.resume.personalInfo);
 
     const initialValues: PersonalInfoValues = {
-        name: savedData?.personalInfo?.name || savedData?.name || '',
-        surname: savedData?.personalInfo?.surname || savedData?.surname || '',
-        email: savedData?.personalInfo?.email || savedData?.email || '',
-        phone_number: savedData?.personalInfo?.phone_number || savedData?.phone_number || '',
-        aboutData: savedData?.personalInfo?.aboutData || savedData?.aboutData || '',
-        image: savedData?.personalInfo?.image || savedData?.image || null,
+        name: savedPersonalInfo?.name || '',
+        surname: savedPersonalInfo?.surname || '',
+        email: savedPersonalInfo?.email || '',
+        phone_number: savedInfoCheck(savedPersonalInfo?.phone_number),
+        aboutData: savedPersonalInfo?.aboutData || '',
+        image: savedPersonalInfo?.image || null,
     };
 
+    // დამხმარე პატარა ფუნქცია ნომრისთვის
+    function savedInfoCheck(val?: string) {
+        return val || '';
+    }
+
     const handleSubmit = (values: PersonalInfoValues) => {
-        saveStoredResumeData({ personalInfo: values });
+        dispatch(updatePersonalInfo(values));
         navigate('/experience');
     };
 
@@ -52,9 +48,6 @@ export function PersonalInfo() {
                     >
                         {({ handleSubmit, errors, touched, setFieldValue }) => (
                             <Form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                                <AutoSaveObserver />
-
-                                {/* სახელი და გვარი */}
                                 <div className="flex gap-4">
                                     <div className="w-1/2 relative">
                                         <Field name="name">
@@ -91,7 +84,6 @@ export function PersonalInfo() {
                                     </div>
                                 </div>
 
-                                {/* ფოტოს ატვირთვის ველი (სახელისა და გვარის შემდეგ) */}
                                 <div className="flex flex-col gap-2">
                                     <label className="text-sm font-bold text-gray-800">პირადი ფოტოს ატვირთვა</label>
                                     <div className="flex items-center gap-4">
@@ -120,7 +112,6 @@ export function PersonalInfo() {
                                     </div>
                                 </div>
 
-                                {/* ელ.ფოსტა */}
                                 <div className="relative">
                                     <Field name="email">
                                         {({ field, meta }: { field: any; meta: any }) => (
@@ -138,7 +129,6 @@ export function PersonalInfo() {
                                     )}
                                 </div>
 
-                                {/* მობილურის ნომერი */}
                                 <div className="relative">
                                     <Field name="phone_number">
                                         {({ field, meta }: { field: any; meta: any }) => (
@@ -156,7 +146,6 @@ export function PersonalInfo() {
                                     )}
                                 </div>
 
-                                {/* ჩემ შესახებ */}
                                 <div className="relative">
                                     <Field name="aboutData">
                                         {({ field, meta }: { field: any; meta: any }) => (

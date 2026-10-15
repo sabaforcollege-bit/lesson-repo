@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { Formik, Form, Field, FieldArray, useFormikContext } from 'formik';
+import { Formik, Form, Field, FieldArray } from 'formik';
 import { useNavigate } from 'react-router-dom';
 import { HeaderNavigation } from '../components/resume/HeaderNavigation';
 import { Input } from '../components/elements/Input';
@@ -8,31 +7,25 @@ import { Button } from '../components/elements/Button';
 import { ResumePreview } from '../components/resume/ResumePreview';
 import { experienceSchema } from '../schemas/resumeValidation';
 import { type ExperienceValues } from '../types/resume';
-import { getStoredResumeData, saveStoredResumeData } from '../utils/storage';
+import { useAppDispatch, useAppSelector } from '../store/hook';
+import { updateExperiences } from '../store/resumeSlice';
 import * as Yup from 'yup';
 
 const validationSchema = Yup.object().shape({
     experiences: Yup.array().of(experienceSchema),
 });
 
-function AutoSaveObserver() {
-    const { values } = useFormikContext<{ experiences: ExperienceValues[] }>();
-
-    useEffect(() => {
-        saveStoredResumeData({ experiences: values.experiences });
-    }, [values]);
-
-    return null;
-}
-
 export function Experience() {
     const navigate = useNavigate();
-    const savedData = getStoredResumeData();
+    const dispatch = useAppDispatch();
+
+    // 👈 ვიღებთ გამოცდილების მონაცემებს Redux-იდან
+    const savedExperiences = useAppSelector((state) => state.resume.experiences);
 
     const initialValues = {
         experiences:
-            savedData.experiences && savedData.experiences.length > 0
-                ? savedData.experiences
+            savedExperiences && savedExperiences.length > 0
+                ? savedExperiences
                 : [
                     {
                         position: '',
@@ -45,7 +38,7 @@ export function Experience() {
     };
 
     const handleSubmit = (values: { experiences: ExperienceValues[] }) => {
-        saveStoredResumeData({ experiences: values.experiences });
+        dispatch(updateExperiences(values.experiences)); // 👈 ვინახავთ Redux-ში
         navigate('/education');
     };
 
@@ -70,8 +63,6 @@ export function Experience() {
 
                             return (
                                 <Form className="flex flex-col gap-6">
-                                    <AutoSaveObserver />
-
                                     <FieldArray name="experiences">
                                         {({ push, remove }) => (
                                             <>

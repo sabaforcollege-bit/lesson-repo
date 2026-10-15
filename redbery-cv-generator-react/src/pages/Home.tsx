@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import logoImage from '../assets/redberry-Logo-with-text.png';
+import logoImage from '../assets/redberry.ge-Logo-with-text.png';
 
 export function Home() {
     const navigate = useNavigate();

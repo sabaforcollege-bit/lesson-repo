@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { Formik, Form, Field, FieldArray, useFormikContext } from 'formik';
+import { Formik, Form, Field, FieldArray } from 'formik';
 import { useNavigate } from 'react-router-dom';
 import { HeaderNavigation } from '../components/resume/HeaderNavigation';
 import { Input } from '../components/elements/Input';
@@ -8,7 +7,8 @@ import { Button } from '../components/elements/Button';
 import { ResumePreview } from '../components/resume/ResumePreview';
 import { educationSchema } from '../schemas/resumeValidation';
 import { type EducationValues } from '../types/resume';
-import { getStoredResumeData, saveStoredResumeData } from '../utils/storage';
+import { useAppDispatch, useAppSelector } from '../store/hook';
+import { updateEducations } from '../store/resumeSlice';
 import * as Yup from 'yup';
 
 const validationSchema = Yup.object().shape({
@@ -25,24 +25,17 @@ const degreesList = [
     'სხვა',
 ];
 
-function AutoSaveObserver() {
-    const { values } = useFormikContext<{ educations: EducationValues[] }>();
-
-    useEffect(() => {
-        saveStoredResumeData({ educations: values.educations });
-    }, [values]);
-
-    return null;
-}
-
 export function Education() {
     const navigate = useNavigate();
-    const savedData = getStoredResumeData();
+    const dispatch = useAppDispatch();
+
+    // 👈 ვიღებთ განათლების მონაცემებს Redux-იდან
+    const savedEducations = useAppSelector((state) => state.resume.educations);
 
     const initialValues = {
         educations:
-            savedData.educations && savedData.educations.length > 0
-                ? savedData.educations
+            savedEducations && savedEducations.length > 0
+                ? savedEducations
                 : [
                     {
                         institute: '',
@@ -54,8 +47,8 @@ export function Education() {
     };
 
     const handleSubmit = (values: { educations: EducationValues[] }) => {
-        saveStoredResumeData({ educations: values.educations });
-        navigate('/resume');
+        dispatch(updateEducations(values.educations)); // 👈 ვინახავთ Redux-ში
+        navigate('/resume'); // ან ფინალურ გვერდზე
     };
 
     return (
@@ -79,8 +72,6 @@ export function Education() {
 
                             return (
                                 <Form className="flex flex-col gap-6">
-                                    <AutoSaveObserver />
-
                                     <FieldArray name="educations">
                                         {({ push, remove }) => (
                                             <>
@@ -130,7 +121,7 @@ export function Education() {
                                                                     <Field
                                                                         as="select"
                                                                         name={`educations.${index}.degree`}
-                                                                        className={`w-full p-3 border rounded-md bg-white text-gray-700 focus:outline-none transition-colors ${degError ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
+                                                                        className={`w-full p-3 border rounded-md bg-white text-gray-700 focus:outline-none ${degError ? 'border-red-500' : 'border-gray-300 focus:border-blue-500'
                                                                             }`}
                                                                     >
                                                                         <option value="">აირჩიეთ ხარისხი</option>
@@ -140,11 +131,8 @@ export function Education() {
                                                                             </option>
                                                                         ))}
                                                                     </Field>
-
                                                                     {degError && (
-                                                                        <span className="text-xs text-red-500">
-                                                                            {(errors.educations as any)?.[index]?.degree || 'სავალდებულოა'}
-                                                                        </span>
+                                                                        <span className="text-xs text-red-500">სავალდებულოა</span>
                                                                     )}
                                                                 </div>
 
